@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1049</width>
+    <height>762</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,21 +19,324 @@
      <widget class="ViewWidget" name="viewWidget"/>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
+     <layout class="QHBoxLayout" name="viewControlsLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetMinimumSize</enum>
+      </property>
+      <item>
+       <widget class="QGroupBox" name="showHideBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Show/hide</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QCheckBox" name="showPointsCheckBox">
+           <property name="text">
+            <string>Points</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="showCentroidsCheckBox">
+           <property name="text">
+            <string>Centroids</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="displayPointsBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Points to display</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="minLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>0%</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="displayPointsSlider">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="value">
+            <number>60</number>
+           </property>
+           <property name="sliderPosition">
+            <number>60</number>
+           </property>
+           <property name="tracking">
+            <bool>true</bool>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="invertedAppearance">
+            <bool>false</bool>
+           </property>
+           <property name="invertedControls">
+            <bool>false</bool>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::NoTicks</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="maxLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>100%</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="pointSizeBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Point size</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QSpinBox" name="pointSizeSpinBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="value">
+            <number>4</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="kGroupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>K</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QSpinBox" name="kSpinBox">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="value">
+            <number>4</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <spacer name="viewControlsSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="dataBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Data</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QComboBox" name="dataComboBox">
+           <item>
+            <property name="text">
+             <string>Grid</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Uniform distribution</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Normal distribution</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>K normal distributions</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="generateDataButton">
+           <property name="text">
+            <string>Generate</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="kMeansControlsLayout">
       <item>
        <widget class="QPushButton" name="stepBackwardButton">
         <property name="text">
-         <string>Step backward</string>
+         <string>Backward</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="stepLabelLabel">
+        <property name="text">
+         <string>Frame:</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QLabel" name="stepLabel">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>50</width>
+          <height>16777215</height>
+         </size>
         </property>
         <property name="text">
          <string>0</string>
@@ -43,19 +346,38 @@
       <item>
        <widget class="QPushButton" name="stepForwardButton">
         <property name="text">
-         <string>Step forward</string>
+         <string>Forward</string>
         </property>
        </widget>
       </item>
       <item>
+       <spacer name="kMeansControlsSpacerLeft">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QLabel" name="fpsLabel">
         <property name="text">
-         <string>FPS</string>
+         <string>K-Means FPS</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QSpinBox" name="fpsSpinBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -75,7 +397,7 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer">
+       <spacer name="kMeansControlsSpacerRight">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -88,9 +410,23 @@
        </spacer>
       </item>
       <item>
+       <widget class="QComboBox" name="initializationComboBox">
+        <item>
+         <property name="text">
+          <string>Random initialization</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Random initialization (real)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="resetButton">
         <property name="text">
-         <string>Reset random</string>
+         <string>Reset centers</string>
         </property>
        </widget>
       </item>
@@ -103,7 +439,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>1049</width>
      <height>21</height>
     </rect>
    </property>
@@ -117,18 +453,13 @@
     <addaction name="separator"/>
     <addaction name="actionReset"/>
    </widget>
+   <widget class="QMenu" name="menuData">
+    <property name="title">
+     <string>Data</string>
+    </property>
+   </widget>
    <addaction name="menuEdit"/>
-  </widget>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
+   <addaction name="menuData"/>
   </widget>
   <action name="actionStep_forward">
    <property name="text">
@@ -153,10 +484,16 @@
    <property name="text">
     <string>Animate</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+Space</string>
+   </property>
   </action>
   <action name="actionReset">
    <property name="text">
     <string>Reset</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>
@@ -168,6 +505,11 @@
    <slots>
     <slot>stepForward()</slot>
     <slot>stepBackward()</slot>
+    <slot>setPointSize(int)</slot>
+    <slot>setMaxDisplayPerc(int)</slot>
+    <slot>setK(int)</slot>
+    <slot>setShowPoints(bool)</slot>
+    <slot>setShowCentroids(bool)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -269,11 +611,124 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>pointSizeSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>viewWidget</receiver>
+   <slot>setPointSize(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>583</x>
+     <y>456</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>181</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionReset</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>reset()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>486</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionAnimate</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>toggleAnimation(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>486</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>displayPointsSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>viewWidget</receiver>
+   <slot>setMaxDisplayPerc(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>372</x>
+     <y>400</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>524</x>
+     <y>148</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>kSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>viewWidget</receiver>
+   <slot>setK(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>657</x>
+     <y>400</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>524</x>
+     <y>148</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showPointsCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>viewWidget</receiver>
+   <slot>setShowPoints(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>53</x>
+     <y>399</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>524</x>
+     <y>148</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showCentroidsCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>viewWidget</receiver>
+   <slot>setShowCentroids(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>133</x>
+     <y>399</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>524</x>
+     <y>148</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>stepForward()</slot>
   <slot>stepBackward()</slot>
   <slot>toggleAnimation()</slot>
   <slot>reset()</slot>
+  <slot>toggleAnimation(bool)</slot>
  </slots>
 </ui>

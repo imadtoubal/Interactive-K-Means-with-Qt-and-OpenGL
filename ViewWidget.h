@@ -14,6 +14,7 @@ class ViewWidget : public QOpenGLWidget, protected QOpenGLFunctions
 
 public:
   ViewWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+  KMeans model;
 
 protected:
   void initializeGL() override;
@@ -28,12 +29,27 @@ public slots:
   void stepBackward();
   void reset();
 
+  void setPointSize(int s);
+  void setMaxDisplayPerc(int s);
+
+  void setK(int k);
+  void setBackgroundColor(QColor c);
+  void setShowPoints(bool show);
+  void setShowCentroids(bool show);
+
 private:
   std::stack<std::vector<float> > m_history;
   int* m_classes;
   int m_k;
+  int m_pointSize;
+  int m_step;
+  float m_maxDisplayPerc;
+  QColor m_backgroundColor;
+
+  bool m_showPoints = true;
+  bool m_showCentroids = true;
+
   Dataset* m_data;
-  KMeans m_model;
 
   float m_turntableAngle = 0.0f;
 

@@ -29,9 +29,10 @@ public slots:
   void stepForward();
   void stepBackward();
 
-  void startAnimation();
-  void pauseAnimation();
   void toggleAnimation();
+  void toggleAnimation(bool animate);
+
+  void updateMaxDisplayPerc();
 
   void reset();
 
