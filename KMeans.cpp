@@ -70,15 +70,6 @@ Point datasetMax(Dataset* dataset) {
   return maxPoint;
 }
 
-
-// KMeans::KMeans(int n, int d, int k) {
-//   m_size = n;
-//   m_dim = d;
-//   m_k = k;
-
-//   m_classes = new int[m_size];
-// }
-
 KMeans::KMeans(Dataset* dataset, int k) {
   m_dataset = dataset;
   m_size = dataset->size;
@@ -95,7 +86,10 @@ KMeans::KMeans(Dataset* dataset, int k) {
 
 void KMeans::initializeCenters() {
   // Initialize the cluster centers
-  initializeCentersRandomReal();
+  if (m_initMethod == INIT_RANDOM)
+    initializeCentersRandom();
+  else
+    initializeCentersRandomReal();
 
   // Assign classes
   assignClasses();
@@ -104,7 +98,7 @@ void KMeans::initializeCenters() {
 void KMeans::initializeCentersRandom() {
 
   std::set<int> visited;
-  while (visited.size() < m_k) {
+  while ( (int) visited.size() < m_k) {
     int r = prng(m_size);
     if (visited.find(r) == visited.end()) {
       // Copy point to center
@@ -200,6 +194,23 @@ void KMeans::setCenters(std::vector<float> centers) {
   assignClasses();
 }
 
+void KMeans::setInitMethod(int method) {
+  m_initMethod = method;
+}
+
+void KMeans::setK(int k) {
+  m_k = k;
+  delete m_centers;
+  delete m_nextCenters;
+  m_centers = new Dataset(k, m_dim);
+  m_nextCenters = new Dataset(k, m_dim);
+  initializeCenters();
+}
+
+int KMeans::getInitMethod() {
+  return m_initMethod;
+}
+
 int* KMeans::getClasses() {
   return m_classes;
 }
@@ -212,9 +223,20 @@ int KMeans::getDim() {
   return m_dim;
 }
 
+float KMeans::getEnergy() {
+  // Calculate the movement
+  float deltaDistance = 0;
+  for (int i = 0; i < m_k; i++)
+    deltaDistance += l2Distance(m_centers->at(i), m_nextCenters->at(i), m_dim)
+                     / m_k;
+
+  return deltaDistance;
+
+}
+
 float KMeans::l1Distance(float* point1, float* point2, int d) {
   float total = 0;
-  for (unsigned i = 0; i < d; i++) {
+  for (int i = 0; i < d; i++) {
     float diff = point1[i] - point2[i];
     total += abs(diff);
   }
@@ -223,7 +245,7 @@ float KMeans::l1Distance(float* point1, float* point2, int d) {
 
 float KMeans::l2Distance(float* point1, float* point2, int d) {
   double total = 0;
-  for (unsigned i = 0; i < d; i++) {
+  for (int i = 0; i < d; i++) {
     double diff = point1[i] - point2[i];
     total += diff * diff;
   }
@@ -232,7 +254,7 @@ float KMeans::l2Distance(float* point1, float* point2, int d) {
 
 float KMeans::l2DistanceSquared(float* point1, float* point2, int d) {
   double total = 0;
-  for (unsigned i = 0; i < d; i++) {
+  for (int i = 0; i < d; i++) {
     double diff = point1[i] - point2[i];
     total += diff * diff;
   }
@@ -249,6 +271,34 @@ Dataset* KMeans::generate2DGrid(float w, float h, float colSize, float rowSize) 
     for (float j = 0; j < h; j += rowSize) {
       dataset->data->push_back((float) i);
       dataset->data->push_back((float) j);
+    }
+  }
+
+  return dataset;
+}
+
+Dataset* KMeans::generate3DGrid(float w, float h, float d,
+                                float colSize, float rowSize, float depSize) {
+  float xGridSize = w / colSize;
+  float yGridSize = h / rowSize;
+  float zGridSize = d / depSize;
+
+  int m_size = std::ceil(xGridSize)
+             * std::ceil(yGridSize)
+             * std::ceil(zGridSize);
+
+  Dataset* dataset = new Dataset(m_size, 3);
+
+  int idx = 0;
+  for (float i = -w / 2; i < w / 2; i += colSize) {
+    for (float j = -h / 2; j < h / 2; j += rowSize) {
+      for (float k = -d / 2; k < d / 2; k += depSize) {
+        dataset->at(idx)[0] = i;
+        dataset->at(idx)[1] = j;
+        dataset->at(idx)[2] = k;
+
+        idx++;
+      }
     }
   }
 
@@ -284,21 +334,40 @@ KMeans::generateKNormalDistributions(int k, int n, Point center, float sigma) {
   std::default_random_engine generator(t);
 
   Dataset* dataset = new Dataset(k * n, d);
+  Dataset* centers = new Dataset(k, d);
+
+  std::uniform_real_distribution<float> distribution(-2, 2);
+  for (int idx = 0; idx < k; idx++)
+    for (int j = 0; j < d; j++)
+      centers->at(idx)[j] = center[j] + distribution(generator);
+
 
   for (int idx = 0; idx < k; idx++) {
-    Point tempCenter(d);
-
-    std::uniform_real_distribution<float> distribution(-2, 2);
-    for (int j = 0; j < d; j++)
-      tempCenter[j] = center[j] + distribution(generator);
-
     for (int i = 0; i < n; i++) {
       for (int j = 0; j < d; j++) {
-        std::normal_distribution<float> distribution(tempCenter[j], sigma);
-        dataset->at(idx * n + i)[j] = distribution(generator);
+        std::normal_distribution<float> distribution(centers->at(idx)[j], sigma);
+        dataset->at(i * k + idx)[j] = distribution(generator);
       }
     }
   }
+
+  return dataset;
+}
+
+Dataset *KMeans::generateUniformDistribution(int n, Point minP, Point maxP) {
+  auto t = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  std::default_random_engine generator(t);
+
+  int d = minP.size();
+  Dataset* dataset = new Dataset(n, d);
+
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < d; j++) {
+      std::uniform_real_distribution<float> distribution(minP[j], maxP[j]);
+      dataset->at(i)[j] = distribution(generator);
+    }
+  }
+
   return dataset;
 }
 

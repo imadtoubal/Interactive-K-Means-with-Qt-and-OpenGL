@@ -1,6 +1,10 @@
 #ifndef KMEANS_H
 #define KMEANS_H
 
+#define INIT_RANDOM 0
+#define INIT_RANDOM_REAL 1
+
+
 #include <vector>
 
 typedef std::vector<float> Point;
@@ -45,6 +49,7 @@ private:
   int m_dim;
   int m_k;
   int m_size;
+  int m_initMethod = INIT_RANDOM;
 
   Dataset* m_centers;
   Dataset* m_nextCenters;
@@ -62,19 +67,26 @@ public:
   void initializeCenters();
   Dataset* getCenters();
   void setCenters(std::vector<float> centers);
+  void setInitMethod(int method);
+  void setK(int k);
 
   int* getClasses();
+  int getInitMethod();
   int getK();
   int getDim();
+
+  float getEnergy();
 
   float step();
   void cluster(int maxIterations = 100, float stoppingThresh = 0.001);
 
   static Dataset* generate2DGrid(float w, float h, float colSize, float rowSize);
-  Dataset* generateGrid(float minimum, float maximum, float step,int dim);
+  static Dataset* generate3DGrid(float w, float h, float d,
+                                 float colSize, float rowSize, float depSize);
   static Dataset* generateNormalDistribution(int n, Point center, float sigma);
   static Dataset* generateKNormalDistributions(int k, int n, Point center,
                                               float sigma);
+  static Dataset* generateUniformDistribution(int n, Point minP, Point maxP);
 
   static float l1Distance(float* point1, float* point2, int d);
   static float l2Distance(float* point1, float* point2, int d);
