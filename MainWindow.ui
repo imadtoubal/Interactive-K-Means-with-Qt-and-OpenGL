@@ -59,6 +59,9 @@
            <property name="text">
             <string>Centroids</string>
            </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
         </layout>
@@ -254,7 +257,7 @@
       <item>
        <widget class="QGroupBox" name="dataBox">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -418,6 +421,11 @@
         </item>
         <item>
          <property name="text">
+          <string>KMeans++ (D2) initialization</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>Random initialization (real)</string>
          </property>
         </item>
@@ -457,13 +465,21 @@
     <property name="title">
      <string>Data</string>
     </property>
+    <addaction name="actionGenerate_3D_Grid_Data"/>
    </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionLoad_data"/>
+   </widget>
+   <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuData"/>
   </widget>
   <action name="actionStep_forward">
    <property name="text">
-    <string>Step forward</string>
+    <string>Step Forward</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -471,7 +487,7 @@
   </action>
   <action name="actionStep_backward">
    <property name="text">
-    <string>Step backward</string>
+    <string>Step Backward</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+B</string>
@@ -494,6 +510,19 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionLoad_data">
+   <property name="text">
+    <string>Load Data...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionGenerate_3D_Grid_Data">
+   <property name="text">
+    <string>Generate 3D Grid Data...</string>
    </property>
   </action>
  </widget>
@@ -678,7 +707,7 @@
   <connection>
    <sender>kSpinBox</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>viewWidget</receiver>
+   <receiver>MainWindow</receiver>
    <slot>setK(int)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -687,7 +716,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>524</x>
-     <y>148</y>
+     <y>380</y>
     </hint>
    </hints>
   </connection>
@@ -723,6 +752,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionGenerate_3D_Grid_Data</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showGenerateDataGridDialog()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>524</x>
+     <y>380</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>stepForward()</slot>
@@ -730,5 +775,7 @@
   <slot>toggleAnimation()</slot>
   <slot>reset()</slot>
   <slot>toggleAnimation(bool)</slot>
+  <slot>setK(int)</slot>
+  <slot>showGenerateDataGridDialog()</slot>
  </slots>
 </ui>
