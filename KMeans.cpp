@@ -84,10 +84,25 @@ KMeans::KMeans(Dataset* dataset, int k) {
   initializeCenters();
 }
 
+void KMeans::setDataset(Dataset *dataset) {
+  delete m_dataset;
+  m_dataset = dataset;
+  m_size = dataset->size;
+  m_dim = dataset->dim;
+
+  // Initialize the cluster centers
+  initializeCenters();
+}
+
 void KMeans::initializeCenters() {
+  // Reset energy
+  m_energy = std::numeric_limits<float>::max();
+
   // Initialize the cluster centers
   if (m_initMethod == INIT_RANDOM)
     initializeCentersRandom();
+  else if (m_initMethod == INIT_RANDOM_D2)
+    initializeCentersD2();
   else
     initializeCentersRandomReal();
 
@@ -97,13 +112,19 @@ void KMeans::initializeCenters() {
 
 void KMeans::initializeCentersRandom() {
 
+  // Initialize visited hashset
   std::set<int> visited;
+
   while ( (int) visited.size() < m_k) {
+    // Get random point
     int r = prng(m_size);
+
+    // If point is not already added
     if (visited.find(r) == visited.end()) {
+
       // Copy point to center
-      for (int i = 0; i < m_dim; i++)
-        m_centers->at(visited.size())[i] = m_dataset->at(r)[i];
+      for (int j = 0; j < m_dim; j++)
+        m_centers->at(visited.size())[j] = m_dataset->at(r)[j];
 
       // Mark pooint as visited
       visited.insert(r);
@@ -132,6 +153,40 @@ void KMeans::initializeCentersRandomReal() {
       m_centers->at(j)[i] = distribution(generator);
     }
   }
+}
+
+void KMeans::initializeCentersD2() {
+  // Get first point
+  int r = prng(m_size);
+  for (int j = 0; j < m_dim; j++)
+    m_centers->at(0)[j] = m_dataset->at(r)[j];
+
+  float probs[m_dataset->size];
+  for (int k = 1; k < m_k; k++) {
+    // float probSum = 0;
+    float maxProb = std::numeric_limits<float>::min();
+    int maxIdx;
+
+    for (int i = 0, l = m_dataset->size; i < l; i++) {
+      probs[i] = std::numeric_limits<float>::max();
+      for (int j = 0; j < k; j++) {
+        float dist = l2DistanceSquared(m_centers->at(j), m_dataset->at(i), m_dim);
+        probs[i] = std::min(dist, probs[i]);
+      }
+
+      // probSum += probs[i];
+
+      if (probs[i] > maxProb) {
+        maxProb = probs[i];
+        maxIdx = i;
+      }
+    }
+
+    for (int j = 0; j < m_dim; j++)
+      m_centers->at(k)[j] = m_dataset->at(maxIdx)[j];
+
+  }
+
 }
 
 
@@ -225,13 +280,7 @@ int KMeans::getDim() {
 
 float KMeans::getEnergy() {
   // Calculate the movement
-  float deltaDistance = 0;
-  for (int i = 0; i < m_k; i++)
-    deltaDistance += l2Distance(m_centers->at(i), m_nextCenters->at(i), m_dim)
-                     / m_k;
-
-  return deltaDistance;
-
+  return m_energy;
 }
 
 float KMeans::l1Distance(float* point1, float* point2, int d) {
@@ -381,15 +430,17 @@ float KMeans::step() {
   for (int i = 0; i < m_k; i++)
     deltaDistance += l2Distance(m_centers->at(i), m_nextCenters->at(i), m_dim) / m_k;
 
-  if (deltaDistance < 0.01f)
-    return deltaDistance;
-
-  // Swap new centers and old centers
-  std::swap(m_centers, m_nextCenters);
+  // Copy centers to next centers
+  for (int i = 0; i < m_k; i++) {
+    for (int j = 0; j < m_dim; j++) {
+      m_centers->at(i)[j] = m_nextCenters->at(i)[j];
+    }
+  }
 
   // Assign classes
   assignClasses();
 
+  m_energy = deltaDistance;
   return deltaDistance;
 }
 

@@ -2,7 +2,8 @@
 #define KMEANS_H
 
 #define INIT_RANDOM 0
-#define INIT_RANDOM_REAL 1
+#define INIT_RANDOM_D2 1
+#define INIT_RANDOM_REAL 2
 
 
 #include <vector>
@@ -50,12 +51,14 @@ private:
   int m_k;
   int m_size;
   int m_initMethod = INIT_RANDOM;
+  float m_energy;
 
   Dataset* m_centers;
   Dataset* m_nextCenters;
 
   void initializeCentersRandom();
   void initializeCentersRandomReal();
+  void initializeCentersD2();
   void updateCenters();
   void assignClasses();
 
@@ -63,6 +66,7 @@ public:
   KMeans();
   KMeans(Dataset* dataset, int k);
 
+  void setDataset(Dataset* dataset);
 
   void initializeCenters();
   Dataset* getCenters();
