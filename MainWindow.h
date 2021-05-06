@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QTimer>
 
+#include "GenerateDataGridDialog.h"
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -20,6 +23,8 @@ private:
   Ui::MainWindow *ui;
   int m_step;
   void updateUI();
+  GenerateDataGridDialog m_generateDataGridDialog;
+
 
   QTimer* m_animationTimer = new QTimer(this);
   bool m_animating = false;
@@ -35,6 +40,9 @@ public slots:
   void updateMaxDisplayPerc();
 
   void reset();
+  void setK(int k);
+
+  void showGenerateDataGridDialog();
 
 };
 #endif // MAINWINDOW_H

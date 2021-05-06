@@ -4,9 +4,10 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLWidget>
-#include "KMeans.h"
 #include <stack>
 #include <QTimer>
+
+#include "KMeans.h"
 
 class ViewWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {

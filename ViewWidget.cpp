@@ -16,9 +16,10 @@ ViewWidget::ViewWidget(QWidget *parent, Qt::WindowFlags f) :
   Point center = {0, 0, 0};
 
   m_k = 8;
-  // m_data = KMeans::generateKNormalDistributions(m_k, 10000, center, .3);
-  // m_data = KMeans::generate3DGrid(5.0f, 5.0f, 5.0f, .2f, .2f, .2f);
+//  m_data = KMeans::generateKNormalDistributions(m_k, 10000, center, .3);
+//  m_data = KMeans::generate3DGrid(5.0f, 5.0f, 5.0f, .2f, .2f, .2f);
   m_data = KMeans::generateUniformDistribution(10000, {-2, -2, -2}, {2, 2, 2});
+
   model = KMeans(m_data, m_k);
 
   // Make a first step
@@ -30,6 +31,7 @@ ViewWidget::ViewWidget(QWidget *parent, Qt::WindowFlags f) :
 
 }
 
+// TODO: can be moved to the shader program
 QVector<GLfloat> getColors(int* classes, int size, int k) {
 
   double vmin = 0;
@@ -131,7 +133,7 @@ void ViewWidget::paintGL() {
   }
 
   if (m_showCentroids) {
-    glPointSize(m_pointSize * 10);
+    glPointSize(m_pointSize * 8);
 
     std::vector<int> uniqueClasses;
     uniqueClasses.reserve(model.getK());
@@ -189,7 +191,9 @@ void ViewWidget::setMaxDisplayPerc(int s) {
 }
 
 void ViewWidget::setK(int k) {
+  m_k = k;
   model.setK(k);
+  m_history.empty();
 }
 
 void ViewWidget::setBackgroundColor(QColor c) {

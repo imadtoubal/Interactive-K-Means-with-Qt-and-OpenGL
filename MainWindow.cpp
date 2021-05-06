@@ -4,7 +4,8 @@
 
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)
-  , ui(new Ui::MainWindow) {
+  , ui(new Ui::MainWindow)
+  , m_generateDataGridDialog(new GenerateDataGridDialog(this)) {
   ui->setupUi(this);
 
   // Point size
@@ -12,6 +13,10 @@ MainWindow::MainWindow(QWidget *parent)
 
   // Background color
   ui->viewWidget->setBackgroundColor(palette().background().color());
+
+  // Set K
+  int k = ui->kSpinBox->value();
+  ui->viewWidget->setK(k);
 
   // K-Means animation
   m_fps = ui->fpsSpinBox->value();
@@ -30,11 +35,11 @@ void MainWindow::updateUI() {
 }
 
 void MainWindow::stepForward() {
-  // TODO: make it dynamic
-  // TODO: address the issue with swapping. When you swap after iteration,
-  // the distance remains the same after each step when vonverged.
 
-  if (ui->viewWidget->model.getEnergy() > 0.01f) {
+  // TODO: make it dynamic
+
+  float energy = ui->viewWidget->model.getEnergy();
+  if (energy > 0.0001f) {
     ui->viewWidget->stepForward();
     m_step += 1;
     updateUI();
@@ -81,4 +86,19 @@ void MainWindow::reset() {
   ui->viewWidget->model.setInitMethod(method);
   ui->viewWidget->reset();
   updateUI();
+}
+
+void MainWindow::setK(int k) {
+  toggleAnimation(false);
+  m_step = 0;
+  int method = ui->initializationComboBox->currentIndex();
+
+  ui->viewWidget->setK(k);
+  ui->viewWidget->model.setInitMethod(method);
+  ui->viewWidget->reset();
+  updateUI();
+}
+
+void MainWindow::showGenerateDataGridDialog() {
+  m_generateDataGridDialog.show();
 }
