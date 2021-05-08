@@ -84,8 +84,14 @@ KMeans::KMeans(Dataset* dataset, int k) {
   initializeCenters();
 }
 
+KMeans::~KMeans() {
+  delete m_centers;
+  delete m_classes;
+  delete m_nextCenters;
+}
+
 void KMeans::setDataset(Dataset *dataset) {
-  delete m_dataset;
+
   m_dataset = dataset;
   m_size = dataset->size;
   m_dim = dataset->dim;
@@ -96,7 +102,7 @@ void KMeans::setDataset(Dataset *dataset) {
 
 void KMeans::initializeCenters() {
   // Reset energy
-  m_energy = std::numeric_limits<float>::max();
+  m_deltaEnergy = std::numeric_limits<float>::max();
 
   // Initialize the cluster centers
   if (m_initMethod == INIT_RANDOM)
@@ -278,9 +284,17 @@ int KMeans::getDim() {
   return m_dim;
 }
 
-float KMeans::getEnergy() {
+float KMeans::getDeltaEnergy() {
   // Calculate the movement
-  return m_energy;
+  return m_deltaEnergy;
+}
+
+float KMeans::getEnergy() {
+  float energy = 0.0f;
+  for (int i = 0; i < m_dataset->size; i++) {
+    energy += l2Distance(m_dataset->at(i), m_centers->at(m_classes[i]), m_dim);
+  }
+  return energy / m_dataset->size;
 }
 
 float KMeans::l1Distance(float* point1, float* point2, int d) {
@@ -339,12 +353,13 @@ Dataset* KMeans::generate3DGrid(float w, float h, float d,
   Dataset* dataset = new Dataset(m_size, 3);
 
   int idx = 0;
-  for (float i = -w / 2; i < w / 2; i += colSize) {
-    for (float j = -h / 2; j < h / 2; j += rowSize) {
-      for (float k = -d / 2; k < d / 2; k += depSize) {
-        dataset->at(idx)[0] = i;
-        dataset->at(idx)[1] = j;
-        dataset->at(idx)[2] = k;
+
+  for (int i = 0; i < xGridSize; i++) {
+    for (int j = 0; j < yGridSize; j++) {
+      for (int k = 0; k < zGridSize; k++) {
+        dataset->at(idx)[0] = -w / 2 + i * colSize;
+        dataset->at(idx)[1] = -h / 2 + j * colSize;
+        dataset->at(idx)[2] = -d / 2 + k * colSize;
 
         idx++;
       }
@@ -420,6 +435,109 @@ Dataset *KMeans::generateUniformDistribution(int n, Point minP, Point maxP) {
   return dataset;
 }
 
+std::vector<float> KMeans::datasetMean(Dataset *dataset) {
+  std::vector<float> meanVec;
+  meanVec.reserve(dataset->dim);
+
+  for (int j = 0; j < dataset->dim; j++)
+    meanVec[j] = 0.0f;
+
+  for (int i = 0; i < dataset->size; i++) {
+    for (int j = 0; j < dataset->dim; j++) {
+      meanVec[j] += dataset->at(i)[j] / dataset->size;
+    }
+  }
+  return meanVec;
+}
+
+std::vector<float> KMeans::datasetStd(Dataset *dataset) {
+  std::vector<float> meanVec = datasetMean(dataset);
+
+  std::vector<float> stdevVec(dataset->dim);
+  for (int j = 0; j < dataset->dim; j++)
+    stdevVec[j] = 0.0f;
+
+  for (int i = 0; i < dataset->size; i++) {
+    for (int j = 0; j < dataset->dim; j++) {
+      stdevVec[j] += std::powf(dataset->at(i)[j] - meanVec[j], 2)
+                   / dataset->size;
+    }
+  }
+
+  for (int j = 0; j < dataset->dim; j++)
+    stdevVec[j] = std::sqrt(stdevVec[j]);
+
+  return stdevVec;
+}
+
+Dataset *KMeans::standardizeDataset(Dataset *dataset) {
+  Dataset* newDataset = new Dataset(dataset->size, dataset->dim);
+
+  // Calculate the mean
+  std::vector<float> meanVec = datasetMean(dataset);
+
+  // Calculate the standard deviation
+  std::vector<float> stdevVec = datasetStd(dataset);
+
+  // z-Normalization
+  for (int i = 0; i < dataset->size; i++) {
+    for (int j = 0; j < dataset->dim; j++) {
+      newDataset->at(i)[j] = (dataset->at(i)[j] - meanVec[j]) / stdevVec[j];
+    }
+  }
+  return newDataset;
+}
+
+void KMeans::standardizeDatasetInPlace(Dataset *dataset) {
+
+  // Calculate the mean
+  std::vector<float> meanVec = datasetMean(dataset);
+
+  // Calculate the standard deviation
+  std::vector<float> stdevVec = datasetStd(dataset);
+
+  // z-Normalization
+  for (int i = 0; i < dataset->size; i++) {
+    for (int j = 0; j < dataset->dim; j++) {
+      dataset->at(i)[j] = (dataset->at(i)[j] - meanVec[j]) / stdevVec[j];
+    }
+  }
+}
+
+Dataset *KMeans::reduceDimPCA(Dataset *dataset) {
+  Dataset* normDataset = new Dataset(dataset->size, dataset->dim);
+
+  // 1. Standardization
+  // Calculate the mean
+  std::vector<float> meanVec = datasetMean(dataset);
+
+  // Calculate the standard deviation
+  std::vector<float> stdevVec = datasetStd(dataset);
+
+  // z-Normalization
+  for (int i = 0; i < dataset->size; i++) {
+    for (int j = 0; j < dataset->dim; j++) {
+      normDataset->at(i)[j] = (dataset->at(i)[j] - meanVec[j]) / stdevVec[j];
+    }
+  }
+
+  // 2. Covariance matrix
+  Dataset* covarianceMatrix = new Dataset(dataset->dim, dataset->dim);
+  for (int i = 0; i < normDataset->size; i++) {
+    for (int j = 0; j < normDataset->dim; j++) {
+      for (int k = 0; k < normDataset->dim; k++) {
+        covarianceMatrix->at(j)[k] += (normDataset->at(i)[j] - meanVec[j])
+                                    * (normDataset->at(i)[k] - meanVec[k])
+                                    / (normDataset->size - 1);
+      }
+    }
+  }
+
+ delete normDataset;
+ delete covarianceMatrix;
+
+}
+
 float KMeans::step() {
 
   // Update centers
@@ -440,7 +558,7 @@ float KMeans::step() {
   // Assign classes
   assignClasses();
 
-  m_energy = deltaDistance;
+  m_deltaEnergy = deltaDistance;
   return deltaDistance;
 }
 

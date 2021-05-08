@@ -2,8 +2,9 @@
 #define KMEANS_H
 
 #define INIT_RANDOM 0
-#define INIT_RANDOM_D2 1
 #define INIT_RANDOM_REAL 2
+#define INIT_RANDOM_D2 1
+
 
 
 #include <vector>
@@ -51,7 +52,7 @@ private:
   int m_k;
   int m_size;
   int m_initMethod = INIT_RANDOM;
-  float m_energy;
+  float m_deltaEnergy;
 
   Dataset* m_centers;
   Dataset* m_nextCenters;
@@ -65,7 +66,7 @@ private:
 public:
   KMeans();
   KMeans(Dataset* dataset, int k);
-
+  ~KMeans();
   void setDataset(Dataset* dataset);
 
   void initializeCenters();
@@ -79,6 +80,7 @@ public:
   int getK();
   int getDim();
 
+  float getDeltaEnergy();
   float getEnergy();
 
   float step();
@@ -91,6 +93,12 @@ public:
   static Dataset* generateKNormalDistributions(int k, int n, Point center,
                                               float sigma);
   static Dataset* generateUniformDistribution(int n, Point minP, Point maxP);
+
+  static std::vector<float> datasetMean(Dataset* dataset);
+  static std::vector<float> datasetStd(Dataset* dataset);
+  static Dataset* standardizeDataset(Dataset* dataset);
+  static void standardizeDatasetInPlace(Dataset* dataset);
+  static Dataset* reduceDimPCA(Dataset* dataset);
 
   static float l1Distance(float* point1, float* point2, int d);
   static float l2Distance(float* point1, float* point2, int d);
