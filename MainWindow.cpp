@@ -1,12 +1,29 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
+#include "GenerateDataGridDialog.h"
+#include "ViewWidget.h"
 
+#include "KMeans.h"
+//#include <QAction>
+//#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)
   , ui(new Ui::MainWindow)
-  , m_generateDataGridDialog(new GenerateDataGridDialog(this)) {
+  , m_generateDataGridDialog(new GenerateDataGridDialog(this))
+  , m_generateDataUniformDialog(new GenerateDataUniformDialog(this))
+  , m_fileDialog(new QFileDialog(this)){
   ui->setupUi(this);
+
+  // Connect generate 3D grid dialog box
+  connect(m_generateDataGridDialog,
+          &GenerateDataGridDialog::dataParametersChanged,
+          ui->viewWidget, &ViewWidget::setDataset3DGrid);
+
+  // Connect generate 3D uniform random dialog box
+  connect(m_generateDataUniformDialog,
+          &GenerateDataUniformDialog::dataParametersChanged,
+          ui->viewWidget, &ViewWidget::setDataset3DUniform);
 
   // Point size
   ui->viewWidget->setPointSize(ui->pointSizeSpinBox->value());
@@ -24,6 +41,10 @@ MainWindow::MainWindow(QWidget *parent)
 
   // Maximum number of points to be displayed
   updateMaxDisplayPerc();
+
+  connect(m_fileDialog, &QFileDialog::fileSelected,
+          this, &MainWindow::loadData);
+
 }
 
 MainWindow::~MainWindow() {
@@ -32,14 +53,15 @@ MainWindow::~MainWindow() {
 
 void MainWindow::updateUI() {
   ui->stepLabel->setText( QString::number(m_step) );
+  ui->energyLabel->setText(QString::number(ui->viewWidget->model->getEnergy()));
 }
 
 void MainWindow::stepForward() {
 
   // TODO: make it dynamic
 
-  float energy = ui->viewWidget->model.getEnergy();
-  if (energy > 0.0001f) {
+  float deltaEnergy = ui->viewWidget->model->getDeltaEnergy();
+  if (deltaEnergy > 0.0001f) {
     ui->viewWidget->stepForward();
     m_step += 1;
     updateUI();
@@ -83,7 +105,7 @@ void MainWindow::reset() {
   toggleAnimation(false);
   m_step = 0;
   int method = ui->initializationComboBox->currentIndex();
-  ui->viewWidget->model.setInitMethod(method);
+  ui->viewWidget->model->setInitMethod(method);
   ui->viewWidget->reset();
   updateUI();
 }
@@ -94,11 +116,58 @@ void MainWindow::setK(int k) {
   int method = ui->initializationComboBox->currentIndex();
 
   ui->viewWidget->setK(k);
-  ui->viewWidget->model.setInitMethod(method);
+  ui->viewWidget->model->setInitMethod(method);
   ui->viewWidget->reset();
   updateUI();
 }
 
 void MainWindow::showGenerateDataGridDialog() {
-  m_generateDataGridDialog.show();
+  m_generateDataGridDialog->show();
+}
+
+void MainWindow::showGenerateDataUniformDialog() {
+  m_generateDataUniformDialog->show();
+}
+
+void MainWindow::openDialog() {
+  m_fileDialog->open();
+}
+
+void MainWindow::loadData(const QString &filePath) {
+  // Read file dialog
+  QFile file(filePath);
+
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+      return;
+
+  QTextStream in(&file);
+
+  int n, dim;
+  // Read first two lines
+  if (!in.atEnd())
+    n = in.readLine().toInt();
+  else
+    return;
+
+  if (!in.atEnd())
+    dim = in.readLine().toInt();
+  else
+    return;
+
+  Dataset* newDataset = new Dataset(n, dim);
+
+  // Read data
+  int i = 0;
+  while (!in.atEnd()) {
+    QString line = in.readLine();
+    QStringList numList = line.split(' ');
+
+    for (int j = 0; j < numList.size(); j++)
+      newDataset->at(i)[j] = numList[j].toFloat();
+    i++;
+  }
+
+  KMeans::standardizeDatasetInPlace(newDataset);
+  ui->viewWidget->setDataset(newDataset);
+
 }

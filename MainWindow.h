@@ -3,9 +3,10 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QFileDialog>
 
 #include "GenerateDataGridDialog.h"
-
+#include "GenerateDataUniformDialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -21,10 +22,14 @@ public:
 
 private:
   Ui::MainWindow *ui;
-  int m_step;
+  int m_step = 0;
   void updateUI();
-  GenerateDataGridDialog m_generateDataGridDialog;
 
+  // Dialog boxes
+  GenerateDataGridDialog* m_generateDataGridDialog;
+  GenerateDataUniformDialog* m_generateDataUniformDialog;
+
+  QFileDialog* m_fileDialog;
 
   QTimer* m_animationTimer = new QTimer(this);
   bool m_animating = false;
@@ -43,6 +48,10 @@ public slots:
   void setK(int k);
 
   void showGenerateDataGridDialog();
+  void showGenerateDataUniformDialog();
+
+  void openDialog();
+  void loadData(const QString &file);
 
 };
 #endif // MAINWINDOW_H

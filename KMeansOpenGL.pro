@@ -10,6 +10,7 @@ CONFIG += c++11
 
 SOURCES += \
     GenerateDataGridDialog.cpp \
+    GenerateDataUniformDialog.cpp \
     KMeans.cpp \
     ViewWidget.cpp \
     main.cpp \
@@ -17,12 +18,14 @@ SOURCES += \
 
 HEADERS += \
     GenerateDataGridDialog.h \
+    GenerateDataUniformDialog.h \
     KMeans.h \
     MainWindow.h \
     ViewWidget.h
 
 FORMS += \
     GenerateDataGridDialog.ui \
+    GenerateDataUniformDialog.ui \
     MainWindow.ui
 
 # Default rules for deployment.
