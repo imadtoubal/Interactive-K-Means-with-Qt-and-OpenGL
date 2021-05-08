@@ -5,31 +5,7 @@
 #include <QOpenGLShaderProgram>
 #include <QDebug>
 #include <QTimer>
-
-ViewWidget::ViewWidget(QWidget *parent, Qt::WindowFlags f) :
-  QOpenGLWidget(parent, f) {
-  auto turntableTimer = new QTimer(this);
-  turntableTimer->callOnTimeout(this, &ViewWidget::updateTurntable);
-  turntableTimer->start(30);
-
-  // Initializing model
-  Point center = {0, 0, 0};
-
-  m_k = 8;
-//  m_data = KMeans::generateKNormalDistributions(m_k, 10000, center, .3);
-//  m_data = KMeans::generate3DGrid(5.0f, 5.0f, 5.0f, .2f, .2f, .2f);
-  m_data = KMeans::generateUniformDistribution(10000, {-2, -2, -2}, {2, 2, 2});
-
-  model = KMeans(m_data, m_k);
-
-  // Make a first step
-  model.step();
-  m_classes = model.getClasses();
-
-  std::vector<float> centers = *model.getCenters()->data;
-  m_history.push(centers);
-
-}
+#include <QMouseEvent>
 
 // TODO: can be moved to the shader program
 QVector<GLfloat> getColors(int* classes, int size, int k) {
@@ -75,13 +51,30 @@ QVector<GLfloat> getColors(int* classes, int size, int k) {
   return colors;
 }
 
+ViewWidget::ViewWidget(QWidget *parent, Qt::WindowFlags f) :
+  QOpenGLWidget(parent, f) {
+  auto turntableTimer = new QTimer(this);
+  turntableTimer->callOnTimeout(this, &ViewWidget::updateTurntable);
+  turntableTimer->start(30);
+
+
+  m_data = KMeans::generateKNormalDistributions(m_k, 10000, {0, 0, 0}, .5);
+//  m_data = KMeans::generate3DGrid(5.0f, 5.0f, 5.0f, .2f, .2f, .2f);
+//  m_data = KMeans::generateUniformDistribution(10000, {-2, -2, -2}, {2, 2, 2});
+//  m_data = KMeans::generateUniformDistribution(10000, {-2, -2}, {2, 2});
+
+  // Initializing model
+  model = new KMeans(m_data, m_k);
+  reset();
+}
+
 void ViewWidget::initializeGL() {
   initializeOpenGLFunctions();
   float r = m_backgroundColor.redF();
   float g = m_backgroundColor.greenF();
   float b = m_backgroundColor.blueF();
   float a = m_backgroundColor.alphaF();
-  glClearColor(r, g, b, a);
+  glClearColor(1, 1, 1, 1);
 
   m_program.addShaderFromSourceCode(QOpenGLShader::Vertex,
     "attribute highp vec4 vertex;\n"
@@ -102,52 +95,55 @@ void ViewWidget::initializeGL() {
     "}");
 
   m_program.link();
-
-
 }
 
 void ViewWidget::paintGL() {
+  if (!m_loadingData) {
 
-  m_program.bind();
-  glEnable(GL_POINT_SMOOTH);
-  glEnable(GL_DEPTH_TEST);
+    m_program.bind();
+    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_DEPTH_TEST);
 
-  QMatrix4x4 pmvMatrix;
-  pmvMatrix.perspective(40, (float) width() / height(), 1, 100);
-  pmvMatrix.lookAt({0, 0, 15}, {0, 0, 0}, {0, 1, 0});
-  pmvMatrix.rotate(m_turntableAngle, {0, 1, 0});
+    QMatrix4x4 pmvMatrix;
+    pmvMatrix.perspective(40, (float) width() / height(), 1, 100);
+    pmvMatrix.lookAt({0, 0, m_zoom}, {0, 0, 0}, {0, 1, 0});
+    pmvMatrix.rotate(m_rotation.y(), {1, 0, 0});
+    pmvMatrix.rotate(m_rotation.x(), {0, 1, 0});
 
+    m_program.enableAttributeArray("vertex");
+    m_program.enableAttributeArray("color");
 
-  m_program.enableAttributeArray("vertex");
-  m_program.enableAttributeArray("color");
+    m_program.setUniformValue("matrix", pmvMatrix);
 
-  m_program.setUniformValue("matrix", pmvMatrix);
+    int dim = std::min(m_data->dim, 3);
 
-  if (m_showPoints) {
-    glPointSize(m_pointSize);
+    if (m_showPoints) {
+      glPointSize(m_pointSize);
 
-    QVector<GLfloat> colors = getColors(m_classes, m_data->size, m_k);
-    m_program.setAttributeArray("vertex", m_data->data->data(), 3);
-    m_program.setAttributeArray("color", colors.constData(), 3);
-    glDrawArrays(GL_POINTS, 0, m_data->size * m_maxDisplayPerc);
+      QVector<GLfloat> colors = getColors(m_classes, m_data->size, m_k);
+      m_program.setAttributeArray("vertex", m_data->data->data(), dim);
+      m_program.setAttributeArray("color", colors.constData(), 3);
+      glDrawArrays(GL_POINTS, 0, m_data->size * m_maxDisplayPerc);
+    }
+
+    if (m_showCentroids) {
+      glPointSize(m_pointSize * 8);
+
+      std::vector<int> uniqueClasses;
+      uniqueClasses.reserve(model->getK());
+      for (int i = 0; i < model->getK(); i++)
+        uniqueClasses[i] = i;
+
+      QVector<GLfloat> colors = getColors(uniqueClasses.data(), m_k, m_k);
+      m_program.setAttributeArray("vertex", model->getCenters()->data->data(),
+                                  dim);
+      m_program.setAttributeArray("color", colors.constData(), 3);
+      glDrawArrays(GL_POINTS, 0, m_k);
+    }
+
+    m_program.disableAttributeArray("vertex");
+    m_program.disableAttributeArray("colors");
   }
-
-  if (m_showCentroids) {
-    glPointSize(m_pointSize * 8);
-
-    std::vector<int> uniqueClasses;
-    uniqueClasses.reserve(model.getK());
-    for (int i = 0; i < model.getK(); i++)
-      uniqueClasses[i] = i;
-
-    QVector<GLfloat> colors = getColors(uniqueClasses.data(), m_data->size, m_k);
-    m_program.setAttributeArray("vertex", model.getCenters()->data->data(), 3);
-    m_program.setAttributeArray("color", colors.constData(), 3);
-    glDrawArrays(GL_POINTS, 0, model.getK());
-  }
-
-  m_program.disableAttributeArray("vertex");
-  m_program.disableAttributeArray("colors");
 }
 
 void ViewWidget::updateTurntable() {
@@ -158,28 +154,32 @@ void ViewWidget::updateTurntable() {
 void ViewWidget::stepForward() {
 
   // Push current centers to stack
-  auto centers = model.getCenters()->data->data();
-  std::vector<float> prevCenters(model.getK() * model.getDim());
-  for (int i = 0, l = model.getK() * model.getDim(); i < l; i++) {
+  auto centers = model->getCenters()->data->data();
+  std::vector<float> prevCenters(model->getK() * model->getDim());
+  for (int i = 0, l = model->getK() * model->getDim(); i < l; i++) {
     prevCenters[i] = centers[i];
   }
   m_history.push(prevCenters);
 
   // Step K-Means forward
-  model.step();
+  model->step();
 }
 
 void ViewWidget::stepBackward() {
   if (m_history.size() > 1) {
     std::vector<float> centers = m_history.top();
-    model.setCenters(centers);
+    model->setCenters(centers);
     m_history.pop();
   }
 }
 
 void ViewWidget::reset() {
-  model.initializeCenters();
+  model->initializeCenters();
+  m_classes = model->getClasses();
+
   m_history.empty();
+  std::vector<float> centers = *model->getCenters()->data;
+  m_history.push(centers);
 }
 
 void ViewWidget::setPointSize(int s) {
@@ -192,7 +192,7 @@ void ViewWidget::setMaxDisplayPerc(int s) {
 
 void ViewWidget::setK(int k) {
   m_k = k;
-  model.setK(k);
+  model->setK(k);
   m_history.empty();
 }
 
@@ -206,4 +206,69 @@ void ViewWidget::setShowPoints(bool show) {
 
 void ViewWidget::setShowCentroids(bool show) {
   m_showCentroids = show;
+}
+
+void ViewWidget::setDataset3DGrid(float minX, float minY, float minZ,
+                                  float maxX, float maxY, float maxZ,
+                                  float stepX, float stepY, float stepZ){
+
+  Dataset* data = KMeans::generate3DGrid(maxX * 2, maxY * 2, maxZ * 2,
+                                  stepX, stepY, stepZ);
+  setDataset(data);
+}
+
+void ViewWidget::setDataset3DUniform(float minX, float minY, float minZ,
+                                     float maxX, float maxY, float maxZ,
+                                     int numPoints){
+
+  Dataset* data = KMeans::generateUniformDistribution(numPoints,
+                                                      {minX, minY, minZ},
+                                                      {maxX, maxY, maxZ});
+  setDataset(data);
+}
+
+void ViewWidget::setDataset(Dataset *data) {
+  m_loadingData = true;
+  KMeans* tempModel = model;
+  Dataset* tempData = m_data;
+
+  model = new KMeans(data, m_k);
+  m_data = data;
+  reset();
+
+  delete tempModel;
+  delete tempData;
+
+  m_loadingData = false;
+}
+
+
+
+void ViewWidget::zoomIn() {
+  m_zoom /= m_zoomStep;
+}
+
+void ViewWidget::zoomOut() {
+  m_zoom *= m_zoomStep;
+}
+
+void ViewWidget::mousePressEvent(QMouseEvent *event) {
+  m_mousePressed = true;
+  m_lastPos = event->pos();
+  m_initRotation = m_rotation;
+}
+
+void ViewWidget::mouseMoveEvent(QMouseEvent *event) {
+  if (m_mousePressed) {
+    int dx = event->x() - m_lastPos.x();
+    int dy = event->y() - m_lastPos.y();
+    m_rotation.setX(m_initRotation.x() + (float) dx / 4.0f);
+    m_rotation.setY(m_initRotation.y() + (float) dy / 4.0f);
+  }
+  update();
+}
+
+void ViewWidget::mouseReleaseEvent(QMouseEvent *event) {
+  Q_UNUSED(event);
+  m_mousePressed = false;
 }
