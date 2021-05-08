@@ -116,6 +116,12 @@
       </item>
       <item>
        <widget class="QDoubleSpinBox" name="maxBoundXSpinBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimum">
          <double>0.000000000000000</double>
         </property>
@@ -198,7 +204,7 @@
          <double>-99.989999999999995</double>
         </property>
         <property name="value">
-         <double>0.010000000000000</double>
+         <double>0.100000000000000</double>
         </property>
        </widget>
       </item>
@@ -221,7 +227,7 @@
          <double>-99.989999999999995</double>
         </property>
         <property name="value">
-         <double>0.010000000000000</double>
+         <double>0.100000000000000</double>
         </property>
        </widget>
       </item>
@@ -244,7 +250,7 @@
          <double>-99.989999999999995</double>
         </property>
         <property name="value">
-         <double>0.010000000000000</double>
+         <double>0.100000000000000</double>
         </property>
        </widget>
       </item>
@@ -347,6 +353,7 @@
   </connection>
  </connections>
  <slots>
+  <signal>dataParametersChanged(float,float,float,float,float,float,float,float,float)</signal>
   <slot>setMinX(double)</slot>
   <slot>setMinY(double)</slot>
   <slot>setMinZ(double)</slot>
