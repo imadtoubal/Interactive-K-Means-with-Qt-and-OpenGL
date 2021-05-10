@@ -2,10 +2,8 @@
 #include "ui_MainWindow.h"
 #include "GenerateDataGridDialog.h"
 #include "ViewWidget.h"
-
 #include "KMeans.h"
-//#include <QAction>
-//#include <QFileDialog>
+
 
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)

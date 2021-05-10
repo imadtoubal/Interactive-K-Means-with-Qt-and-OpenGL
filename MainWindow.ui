@@ -537,6 +537,9 @@
    <property name="text">
     <string>Generate 3D Uniform Distribution Data...</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+U</string>
+   </property>
   </action>
  </widget>
  <customwidgets>

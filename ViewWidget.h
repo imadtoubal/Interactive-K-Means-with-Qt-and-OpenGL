@@ -56,7 +56,7 @@ public slots:
 private:
   std::stack<std::vector<float> > m_history;
   int* m_classes;
-  int m_k = 5;
+  int m_k = 4;
   int m_pointSize;
   int m_step;
 
@@ -64,6 +64,8 @@ private:
   bool m_mousePressed = false;
   QPointF m_rotation;
   QPointF m_initRotation;
+  QPointF m_position;
+  QPointF m_initPosition;
   float m_zoom = 10;
   float m_zoomStep = 1.25;
 

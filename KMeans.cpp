@@ -74,7 +74,7 @@ KMeans::KMeans(Dataset* dataset, int k) {
   m_dataset = dataset;
   m_size = dataset->size;
   m_dim = dataset->dim;
-  m_k = k;
+  m_k = qMin(k, dataset->size);
 
   m_centers = new Dataset(k, m_dim);
   m_nextCenters = new Dataset(k, m_dim);
@@ -260,11 +260,11 @@ void KMeans::setInitMethod(int method) {
 }
 
 void KMeans::setK(int k) {
-  m_k = k;
+  m_k = qMin(k, m_dataset->size);
   delete m_centers;
   delete m_nextCenters;
-  m_centers = new Dataset(k, m_dim);
-  m_nextCenters = new Dataset(k, m_dim);
+  m_centers = new Dataset(m_k, m_dim);
+  m_nextCenters = new Dataset(m_k, m_dim);
   initializeCenters();
 }
 

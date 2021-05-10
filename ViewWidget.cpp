@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QTimer>
 #include <QMouseEvent>
+#include <QApplication>
 
 // TODO: can be moved to the shader program
 QVector<GLfloat> getColors(int* classes, int size, int k) {
@@ -74,7 +75,7 @@ void ViewWidget::initializeGL() {
   float g = m_backgroundColor.greenF();
   float b = m_backgroundColor.blueF();
   float a = m_backgroundColor.alphaF();
-  glClearColor(1, 1, 1, 1);
+  glClearColor(r, g, b, a);
 
   m_program.addShaderFromSourceCode(QOpenGLShader::Vertex,
     "attribute highp vec4 vertex;\n"
@@ -106,7 +107,9 @@ void ViewWidget::paintGL() {
 
     QMatrix4x4 pmvMatrix;
     pmvMatrix.perspective(40, (float) width() / height(), 1, 100);
-    pmvMatrix.lookAt({0, 0, m_zoom}, {0, 0, 0}, {0, 1, 0});
+    float originX = m_position.x();
+    float originY = m_position.y();
+    pmvMatrix.lookAt({originX, originY, m_zoom}, {originX, originY, 0}, {0, 1, 0});
     pmvMatrix.rotate(m_rotation.y(), {1, 0, 0});
     pmvMatrix.rotate(m_rotation.x(), {0, 1, 0});
 
@@ -127,7 +130,7 @@ void ViewWidget::paintGL() {
     }
 
     if (m_showCentroids) {
-      glPointSize(m_pointSize * 8);
+      glPointSize(m_pointSize * 4);
 
       std::vector<int> uniqueClasses;
       uniqueClasses.reserve(model->getK());
@@ -191,8 +194,8 @@ void ViewWidget::setMaxDisplayPerc(int s) {
 }
 
 void ViewWidget::setK(int k) {
-  m_k = k;
-  model->setK(k);
+  m_k = qMin(k, m_data->size);
+  model->setK(m_k);
   m_history.empty();
 }
 
@@ -256,14 +259,22 @@ void ViewWidget::mousePressEvent(QMouseEvent *event) {
   m_mousePressed = true;
   m_lastPos = event->pos();
   m_initRotation = m_rotation;
+  m_initPosition = m_position;
 }
 
 void ViewWidget::mouseMoveEvent(QMouseEvent *event) {
   if (m_mousePressed) {
+    Qt::KeyboardModifiers kmod = QApplication::queryKeyboardModifiers();
     int dx = event->x() - m_lastPos.x();
     int dy = event->y() - m_lastPos.y();
-    m_rotation.setX(m_initRotation.x() + (float) dx / 4.0f);
-    m_rotation.setY(m_initRotation.y() + (float) dy / 4.0f);
+
+    if (kmod.testFlag(Qt::ShiftModifier)) {
+      m_position.setX(m_initPosition.x() - (float) dx / 64.0f);
+      m_position.setY(m_initPosition.y() + (float) dy / 64.0f);
+    } else {
+      m_rotation.setX(m_initRotation.x() + (float) dx / 4.0f);
+      m_rotation.setY(m_initRotation.y() + (float) dy / 4.0f);
+    }
   }
   update();
 }
