@@ -1,6 +1,7 @@
-# Interactive-K-Means-with-Qt-and-OpenGL
+# Interactive K-Means with Qt and OpenGL
 Interactive K-Means with Qt and OpenGL, written in C++.
 
+![Interactive K-Means with Qt and OpenGL](KMeansOpenGl-UI.png)
 ## Running the code in [Qt Creator](https://www.qt.io/product/development-tools)
 
 Running this code requires [Qt Creator](https://www.qt.io/product/development-tools). 
