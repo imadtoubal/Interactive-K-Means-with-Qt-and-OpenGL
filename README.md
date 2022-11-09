@@ -13,8 +13,8 @@ You can then build and run the code inside of Qt Creator ([tutorial[(https://sta
 
 ## Built With
 
-* [Qt](https://www.qt.io/) - The Machine Learning framework used
-* [Qt Creatoe](https://www.qt.io/product/development-tools/) - The web server library
+* [Qt](https://www.qt.io/) 
+* [Qt Creatoe](https://www.qt.io/product/development-tools/) 
 
 ## Authors
 
